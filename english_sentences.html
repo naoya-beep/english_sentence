@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>English Sentences</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #1a1d24;
+    --card-hover: #232730;
+    --text: #e8eaed;
+    --text-sub: #9aa0a6;
+    --accent: #4a9eff;
+    --accent-hover: #3a8ae8;
+    --border: #2a2f3a;
+    --danger: #ef5350;
+    --success: #66bb6a;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding-bottom: 120px;
+  }
+
+  header {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  .meta {
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-top: 4px;
+  }
+
+  .voice-bar {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 13px;
+  }
+
+  .voice-bar select {
+    flex: 1;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .voice-bar label {
+    color: var(--text-sub);
+    font-size: 12px;
+  }
+
+  ul.sentence-list {
+    list-style: none;
+    margin: 0;
+    padding: 12px;
+  }
+
+  li.sentence-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.15s;
+  }
+
+  li.sentence-item:active {
+    background: var(--card-hover);
+  }
+
+  .sentence-text {
+    flex: 1;
+    font-size: 16px;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .play-btn {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .play-btn:active {
+    background: var(--accent-hover);
+    transform: scale(0.95);
+  }
+
+  .play-btn.speaking {
+    background: var(--success);
+  }
+
+  .delete-btn {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-sub);
+    font-size: 18px;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+
+  .delete-btn:active {
+    color: var(--danger);
+  }
+
+  .add-area {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    padding: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .add-area input {
+    flex: 1;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 16px;
+    outline: none;
+  }
+
+  .add-area input:focus {
+    border-color: var(--accent);
+  }
+
+  .add-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .add-btn:active {
+    background: var(--accent-hover);
+  }
+
+  .toolbar {
+    padding: 0 16px 12px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .tool-btn {
+    background: transparent;
+    color: var(--text-sub);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .tool-btn:active {
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--text-sub);
+    padding: 40px 20px;
+    font-size: 14px;
+  }
+
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+  }
+
+  .modal.open {
+    display: flex;
+  }
+
+  .modal-content {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .modal-content h2 {
+    margin: 0 0 12px;
+    font-size: 16px;
+  }
+
+  .modal-content textarea {
+    width: 100%;
+    min-height: 200px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    resize: vertical;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    justify-content: flex-end;
+  }
+
+  .modal-actions button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .modal-actions button.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📚 English Sentences</h1>
+  <div class="meta" id="meta">0 sentences</div>
+  <div class="voice-bar">
+    <label>Voice:</label>
+    <select id="voiceSelect"></select>
+  </div>
+</header>
+
+<div class="toolbar">
+  <button class="tool-btn" onclick="openExport()">📤 Export JSON</button>
+  <button class="tool-btn" onclick="openImport()">📥 Import JSON</button>
+  <button class="tool-btn" onclick="resetToDefault()">🔄 Reset</button>
+</div>
+
+<ul class="sentence-list" id="list"></ul>
+
+<div class="add-area">
+  <input type="text" id="newSentence" placeholder="Add a new sentence..." autocomplete="off">
+  <button class="add-btn" onclick="addSentence()">Add</button>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h2 id="modalTitle">Export</h2>
+    <textarea id="modalText"></textarea>
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeModal()">Close</button>
+      <button id="modalAction" onclick="modalActionHandler()">Copy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const DEFAULT_SENTENCES = [
+    "I can't afford it right now.",
+    "What are you talking about?",
+    "It doesn't make any sense."
+  ];
+
+  const STORAGE_KEY = "english_sentences_v1";
+  const VOICE_KEY = "english_sentences_voice";
+
+  let sentences = [];
+  let voices = [];
+  let selectedVoiceName = localStorage.getItem(VOICE_KEY) || null;
+  let modalMode = "export"; // or "import"
+
+  // ---- Storage ----
+  function loadSentences() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        sentences = JSON.parse(raw);
+        return;
+      } catch(e) {}
+    }
+    sentences = [...DEFAULT_SENTENCES];
+    saveSentences();
+  }
+
+  function saveSentences() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sentences));
+  }
+
+  // ---- Render ----
+  function render() {
+    const list = document.getElementById("list");
+    const meta = document.getElementById("meta");
+    meta.textContent = `${sentences.length} sentence${sentences.length !== 1 ? "s" : ""}`;
+
+    if (sentences.length === 0) {
+      list.innerHTML = '<div class="empty">No sentences yet. Add one below.</div>';
+      return;
+    }
+
+    list.innerHTML = "";
+    sentences.forEach((text, idx) => {
+      const li = document.createElement("li");
+      li.className = "sentence-item";
+      li.innerHTML = `
+        <button class="play-btn" data-idx="${idx}" aria-label="Play">▶</button>
+        <div class="sentence-text">${escapeHtml(text)}</div>
+        <button class="delete-btn" data-del="${idx}" aria-label="Delete">✕</button>
+      `;
+      list.appendChild(li);
+    });
+
+    // Attach handlers
+    list.querySelectorAll(".play-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const idx = parseInt(e.currentTarget.dataset.idx);
+        speak(sentences[idx], e.currentTarget);
+      });
+    });
+    list.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const idx = parseInt(e.currentTarget.dataset.del);
+        if (confirm("Delete this sentence?")) {
+          sentences.splice(idx, 1);
+          saveSentences();
+          render();
+        }
+      });
+    });
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[c]));
+  }
+
+  // ---- Add ----
+  function addSentence() {
+    const input = document.getElementById("newSentence");
+    const text = input.value.trim();
+    if (!text) return;
+    sentences.push(text);
+    saveSentences();
+    input.value = "";
+    render();
+    // Scroll to bottom
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  }
+
+  document.getElementById("newSentence").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addSentence();
+  });
+
+  // ---- Speech ----
+  // iOS Safari workaround: getVoices() often returns [] on first call.
+  // onvoiceschanged is unreliable on iOS, so we poll until voices arrive.
+  let voicesReady = false;
+
+  function loadVoices() {
+    const all = speechSynthesis.getVoices();
+    if (all.length === 0) return false;
+
+    voices = all.filter(v => v.lang && v.lang.toLowerCase().startsWith("en"));
+    voicesReady = true;
+
+    const select = document.getElementById("voiceSelect");
+    select.innerHTML = "";
+
+    if (voices.length === 0) {
+      // No English voices installed on device
+      const opt = document.createElement("option");
+      opt.textContent = "⚠️ No English voice installed";
+      opt.disabled = true;
+      select.appendChild(opt);
+      return true;
+    }
+
+    voices.forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v.name;
+      opt.textContent = `${v.name} (${v.lang})`;
+      if (v.name === selectedVoiceName) opt.selected = true;
+      select.appendChild(opt);
+    });
+
+    // Default: prefer en-US, then any en-*
+    const stillValid = voices.find(v => v.name === selectedVoiceName);
+    if (!stillValid) {
+      const preferred =
+        voices.find(v => v.lang === "en-US" && /Samantha|Aaron|Karen|Daniel/i.test(v.name)) ||
+        voices.find(v => v.lang === "en-US") ||
+        voices[0];
+      selectedVoiceName = preferred.name;
+      select.value = selectedVoiceName;
+    }
+    return true;
+  }
+
+  function ensureVoicesLoaded(callback) {
+    if (voicesReady && voices.length > 0) {
+      callback();
+      return;
+    }
+    // Poll up to ~2 seconds
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts++;
+      if (loadVoices() || attempts > 20) {
+        clearInterval(timer);
+        callback();
+      }
+    }, 100);
+  }
+
+  document.getElementById("voiceSelect").addEventListener("change", (e) => {
+    selectedVoiceName = e.target.value;
+    localStorage.setItem(VOICE_KEY, selectedVoiceName);
+  });
+
+  speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices(); // First attempt; may return false on iOS
+
+  function speak(text, btn) {
+    ensureVoicesLoaded(() => {
+      speechSynthesis.cancel();
+
+      const utter = new SpeechSynthesisUtterance(text);
+
+      // CRITICAL for iOS: must explicitly set voice, otherwise it falls back
+      // to the system default (often Japanese) and ignores utter.lang.
+      let voice = voices.find(v => v.name === selectedVoiceName);
+      if (!voice) {
+        voice = voices.find(v => v.lang === "en-US") || voices[0];
+      }
+
+      if (!voice) {
+        alert("No English voice available. Go to iOS Settings → Accessibility → Spoken Content → Voices → English and download a voice (e.g., Samantha).");
+        return;
+      }
+
+      utter.voice = voice;
+      utter.lang = voice.lang;
+      utter.rate = 0.95;
+      utter.pitch = 1.0;
+
+      if (btn) {
+        btn.classList.add("speaking");
+        btn.textContent = "❚❚";
+        utter.onend = utter.onerror = () => {
+          btn.classList.remove("speaking");
+          btn.textContent = "▶";
+        };
+      }
+      speechSynthesis.speak(utter);
+    });
+  }
+
+  // ---- Export / Import ----
+  function openModal(mode) {
+    modalMode = mode;
+    const modal = document.getElementById("modal");
+    const title = document.getElementById("modalTitle");
+    const text = document.getElementById("modalText");
+    const action = document.getElementById("modalAction");
+
+    if (mode === "export") {
+      title.textContent = "Export — copy this JSON and commit to GitHub";
+      text.value = JSON.stringify(sentences, null, 2);
+      text.readOnly = true;
+      action.textContent = "Copy";
+    } else {
+      title.textContent = "Import — paste JSON array of sentences";
+      text.value = "";
+      text.readOnly = false;
+      action.textContent = "Import";
+    }
+    modal.classList.add("open");
+  }
+
+  function openExport() { openModal("export"); }
+  function openImport() { openModal("import"); }
+
+  function closeModal() {
+    document.getElementById("modal").classList.remove("open");
+  }
+
+  function modalActionHandler() {
+    const text = document.getElementById("modalText");
+    if (modalMode === "export") {
+      text.select();
+      navigator.clipboard.writeText(text.value).then(() => {
+        document.getElementById("modalAction").textContent = "Copied!";
+        setTimeout(() => {
+          document.getElementById("modalAction").textContent = "Copy";
+        }, 1500);
+      }).catch(() => {
+        alert("Select the text and copy manually.");
+      });
+    } else {
+      try {
+        const parsed = JSON.parse(text.value);
+        if (!Array.isArray(parsed) || !parsed.every(s => typeof s === "string")) {
+          throw new Error("Must be an array of strings");
+        }
+        if (confirm(`Replace current ${sentences.length} sentences with ${parsed.length} new ones?`)) {
+          sentences = parsed;
+          saveSentences();
+          render();
+          closeModal();
+        }
+      } catch(e) {
+        alert("Invalid JSON: " + e.message);
+      }
+    }
+  }
+
+  function resetToDefault() {
+    if (confirm("Reset to default sentences? Your additions will be lost.")) {
+      sentences = [...DEFAULT_SENTENCES];
+      saveSentences();
+      render();
+    }
+  }
+
+  // ---- Init ----
+  loadSentences();
+  render();
+</script>
+</body>
+</html>
